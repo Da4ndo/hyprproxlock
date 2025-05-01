@@ -21,7 +21,11 @@ build() {
 
 pkgver() {
   cd "$srcdir/hyprproxlock"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  # Format: [base_version].r[commit_count].g[commit_hash]
+  printf "%s.r%s.g%s" \
+    "$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)" \
+    "$(git rev-list --count HEAD)" \
+    "$(git rev-parse --short HEAD)"
 }
 
 package() {
