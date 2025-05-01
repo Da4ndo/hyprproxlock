@@ -6,6 +6,7 @@ pub struct DeviceConfig {
     pub mac_address: String,
     pub name: String,
     pub enabled: bool,
+    pub auto_connect: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -19,6 +20,7 @@ pub struct TimingsConfig {
     pub lock_hold_seconds: u64,
     pub unlock_hold_seconds: u64,
     pub poll_interval: u64,
+    pub reconnect_interval: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -69,6 +71,7 @@ impl Config {
                 \tmac_address = \"XX:XX:XX:XX:XX:XX\"\n\
                 \tname = \"My Device\"\n\
                 \tenabled = true\n\
+                \tauto_connect = true\n\
                 }}\n\n\
                 thresholds {{\n\
                 \tlock_threshold = -25\n\
@@ -78,13 +81,14 @@ impl Config {
                 \tlock_hold_seconds = 3\n\
                 \tunlock_hold_seconds = 3\n\
                 \tpoll_interval = 1\n\
+                \treconnect_interval = 20\n\
                 }}",
                 config_path.display()
             ));
         }
 
         let content = fs::read_to_string(&config_path)
-            .with_context(|| format!("Failed to read config file: {:?}", config_path))?;
+            .with_context(|| format!("Failed to read config file: {config_path:?}"))?;
 
         let mut devices = Vec::new();
         let mut thresholds = ThresholdsConfig {
@@ -95,6 +99,7 @@ impl Config {
             lock_hold_seconds: 3,
             unlock_hold_seconds: 3,
             poll_interval: 1,
+            reconnect_interval: 20,
         };
 
         let mut current_section = String::new();
@@ -115,6 +120,7 @@ impl Config {
                         mac_address: String::new(),
                         name: String::new(),
                         enabled: true,
+                        auto_connect: false,
                     });
                 }
                 continue;
@@ -141,6 +147,7 @@ impl Config {
                                 "mac_address" => device.mac_address = value.to_string(),
                                 "name" => device.name = value.to_string(),
                                 "enabled" => device.enabled = value.parse().unwrap_or(true),
+                                "auto_connect" => device.auto_connect = value.parse().unwrap_or(false),
                                 _ => {}
                             }
                         }
@@ -157,6 +164,7 @@ impl Config {
                             "lock_hold_seconds" => timings.lock_hold_seconds = value.parse().unwrap_or(3),
                             "unlock_hold_seconds" => timings.unlock_hold_seconds = value.parse().unwrap_or(3),
                             "poll_interval" => timings.poll_interval = value.parse().unwrap_or(1),
+                            "reconnect_interval" => timings.reconnect_interval = value.parse().unwrap_or(20),
                             _ => {}
                         }
                     }

@@ -9,6 +9,7 @@ A proximity-based daemon for [Hyprland](https://hyprland.org/) that triggers scr
 - 🔄 **Configurable Thresholds**: Customize signal strength thresholds for locking/unlocking
 - ⏱️ **Adjustable Timings**: Fine-tune lock/unlock hold times and polling intervals
 - 🚀 **Optimized Performance**: Lightweight Rust implementation with minimal dependencies, efficient resource usage, and battery-friendly Bluetooth polling
+- 🔌 **Auto-Connect**: Automatically reconnect to configured devices at specified intervals
 
 ## 📋 Dependencies
 
@@ -34,28 +35,31 @@ Create a configuration file at `~/.config/hypr/hyprproxlock.conf`:
 ```ini
 # Device Configuration
 device {
-    mac_address = "XX:XX:XX:XX:XX:XX"
-    name = "My Device"
-    enabled = true
+   mac_address = "XX:XX:XX:XX:XX:XX"
+   name = "My Device"
+   enabled = true
+   auto_connect = true
 }
 
 device {
-    mac_address = "XX:XX:XX:XX:XX:XX"
-    name = "My Watch"
-    enabled = true
+   mac_address = "XX:XX:XX:XX:XX:XX"
+   name = "My Watch"
+   enabled = true
+   auto_connect = false
 }
 
 # Threshold Settings
 thresholds {
-    lock_threshold = -25
-    unlock_threshold = -15
+   lock_threshold = -25
+   unlock_threshold = -15
 }
 
 # Timing Configuration
 timings {
-    lock_hold_seconds = 3
-    unlock_hold_seconds = 3
-    poll_interval = 1
+   lock_hold_seconds = 3
+   unlock_hold_seconds = 3
+   poll_interval = 1
+   reconnect_interval = 20
 }
 ```
 
@@ -88,6 +92,13 @@ Let's break down how hyprproxlock works in simple terms:
 - The tool only works when your Bluetooth is turned ON
 - Your device (phone, watch, etc.) must be paired and connected
 - If Bluetooth is off or no devices are connected, the tool won't do anything
+- With `auto_connect = true`, the tool will attempt to reconnect to devices when connectivity is lost
+- The `reconnect_interval` setting controls how often reconnection attempts are made (in seconds)
+- Auto-connect attempts are only made for:
+  - Devices that are enabled in the configuration
+  - Devices with `auto_connect = true` specified
+  - Devices that appear to be disconnected (no valid RSSI readings)
+- This feature is useful for maintaining consistent connectivity with devices that may disconnect
 
 ### 📶 Signal Strength (RSSI)
 - The tool measures how strong your device's Bluetooth signal is
@@ -128,9 +139,22 @@ Let's break down how hyprproxlock works in simple terms:
 - This means it's always keeping an eye on your device's position
 - You can adjust how often it checks in the configuration
 
-## ⚠️ Note on hcitool
+## 📊 Logging
 
-Currently, the project uses `hcitool` from the `bluez-deprecated-tools` package for Bluetooth signal strength measurement. This is a temporary solution as attempts to use the Rust bluez implementation `bluer` did not return valid RSSI values. Future versions will aim to replace this with a more modern solution.
+hyprproxlock creates logs in the following locations:
+- **Log files**: `$XDG_STATE_HOME/hyprproxlock/logs/hyprproxlock.log.YYYY-MM-DD`
+- **Console output**: When running in the terminal, you'll see more detailed debug information
+
+The log file only contains INFO level logs (important status changes and connection events), while the console output includes DEBUG level logs (more detailed diagnostic information).
+
+This helps to:
+- Keep log files smaller and focused on important events
+- Provide developers with detailed information when debugging issues
+- Maintain easy access to important logs for users 
+
+> [!CAUTION]
+> Currently, the project uses `hcitool` from the `bluez-deprecated-tools` package for Bluetooth signal strength measurement. This is a temporary solution as attempts to use the Rust bluez implementation `bluer` did not return valid RSSI values. Future versions will aim to replace this with a more modern solution.
+
 
 ## 📝 License
 
@@ -143,4 +167,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 🙏 Acknowledgments
 
 - [Hyprland](https://hyprland.org/) for the amazing window manager
-- [hyprlock](https://github.com/hyprwm/hyprlock) for the screen locker 
+- [hyprlock](https://github.com/hyprwm/hyprlock) for the screen locker
