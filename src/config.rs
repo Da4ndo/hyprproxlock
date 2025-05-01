@@ -34,7 +34,7 @@ impl Config {
     pub fn load() -> Result<Self> {
         // Determine if we're in release mode
         let is_release = cfg!(not(debug_assertions));
-        
+
         // Try to load config from current directory first (for development/debug mode)
         let config_path = if !is_release {
             // In debug mode, try current directory first
@@ -104,10 +104,10 @@ impl Config {
 
         let mut current_section = String::new();
         let mut current_device = None;
-        
+
         for line in content.lines() {
             let line = line.trim();
-            
+
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
@@ -147,27 +147,35 @@ impl Config {
                                 "mac_address" => device.mac_address = value.to_string(),
                                 "name" => device.name = value.to_string(),
                                 "enabled" => device.enabled = value.parse().unwrap_or(true),
-                                "auto_connect" => device.auto_connect = value.parse().unwrap_or(false),
+                                "auto_connect" => {
+                                    device.auto_connect = value.parse().unwrap_or(false)
+                                }
                                 _ => {}
                             }
                         }
                     }
-                    "thresholds" => {
-                        match key {
-                            "lock_threshold" => thresholds.lock_threshold = value.parse().unwrap_or(-20),
-                            "unlock_threshold" => thresholds.unlock_threshold = value.parse().unwrap_or(-15),
-                            _ => {}
+                    "thresholds" => match key {
+                        "lock_threshold" => {
+                            thresholds.lock_threshold = value.parse().unwrap_or(-20)
                         }
-                    }
-                    "timings" => {
-                        match key {
-                            "lock_hold_seconds" => timings.lock_hold_seconds = value.parse().unwrap_or(3),
-                            "unlock_hold_seconds" => timings.unlock_hold_seconds = value.parse().unwrap_or(3),
-                            "poll_interval" => timings.poll_interval = value.parse().unwrap_or(1),
-                            "reconnect_interval" => timings.reconnect_interval = value.parse().unwrap_or(20),
-                            _ => {}
+                        "unlock_threshold" => {
+                            thresholds.unlock_threshold = value.parse().unwrap_or(-15)
                         }
-                    }
+                        _ => {}
+                    },
+                    "timings" => match key {
+                        "lock_hold_seconds" => {
+                            timings.lock_hold_seconds = value.parse().unwrap_or(3)
+                        }
+                        "unlock_hold_seconds" => {
+                            timings.unlock_hold_seconds = value.parse().unwrap_or(3)
+                        }
+                        "poll_interval" => timings.poll_interval = value.parse().unwrap_or(1),
+                        "reconnect_interval" => {
+                            timings.reconnect_interval = value.parse().unwrap_or(20)
+                        }
+                        _ => {}
+                    },
                     _ => {}
                 }
             }
@@ -179,4 +187,4 @@ impl Config {
             timings,
         })
     }
-} 
+}

@@ -8,7 +8,7 @@ arch=(x86_64)
 license=(BSD)
 url="https://github.com/Da4ndo/hyprproxlock"
 provides=('hyprproxlock')
-conflicts=('hyprproxlock')
+conflicts=('hyprproxlock' 'hyprproxlock-debug')
 depends=('rust' 'cargo' 'bluez-deprecated-tools' 'hyprlock>=0')
 makedepends=('git' 'pkg-config' 'dbus')
 source=("git+https://github.com/Da4ndo/hyprproxlock.git")

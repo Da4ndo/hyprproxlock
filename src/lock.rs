@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use std::{process::Command, thread, time::Duration};
 use tracing::{info, warn};
 
@@ -39,7 +39,12 @@ impl LockManager {
         self.unlock_timer
     }
 
-    pub fn update_timers(&mut self, all_devices_weak: bool, any_device_in_range: bool, poll_interval: u64) {
+    pub fn update_timers(
+        &mut self,
+        all_devices_weak: bool,
+        any_device_in_range: bool,
+        poll_interval: u64,
+    ) {
         // Sync with actual system state
         self.locked = Self::is_hyprlock_running();
 
@@ -69,30 +74,30 @@ impl LockManager {
     pub fn unlock_screen(&mut self) -> Result<()> {
         if self.locked {
             info!("Unlocking screen");
-            
+
             // Send unlock signal to hyprlock
             Command::new("pkill")
                 .args(["-USR1", "hyprlock"])
                 .spawn()
                 .context("Failed to send unlock signal to hyprlock")?;
-            
+
             // Small delay before enabling display
             thread::sleep(Duration::from_millis(500));
-            
+
             // Enable display using hyprctl
             let output = Command::new("hyprctl")
                 .args(["dispatch", "dpms", "on"])
                 .output()
                 .context("Failed to execute hyprctl command")?;
-            
+
             if !output.status.success() {
                 let error_msg = String::from_utf8_lossy(&output.stderr);
                 warn!("Failed to enable display: {}", error_msg);
             }
-                
+
             self.locked = false;
             self.unlock_timer = 0;
         }
         Ok(())
     }
-} 
+}

@@ -1,12 +1,14 @@
 name: Git Release and Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Rust Code Check"]
+    branches: [main]
+    types: [completed]
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

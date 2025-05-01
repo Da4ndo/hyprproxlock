@@ -10,6 +10,7 @@ pkgdesc="A proximity-based daemon for Hyprland that triggers screen locking and 
 arch=(x86_64)
 license=(BSD)
 url="https://github.com/Da4ndo/hyprproxlock"
+conflicts=('hyprproxlock-git' 'hyprproxlock-git-debug')
 depends=('bluez-deprecated-tools' 'hyprlock>=0')
 source=("https://github.com/Da4ndo/hyprproxlock/releases/download/v${pkgver}/hyprproxlock-${pkgver}-linux-x86_64.tar.gz")
 sha256sums=('SKIP')  # Replace SKIP with actual checksum when available
